@@ -1,0 +1,12 @@
+// This Query is supplied as an example, every use in professional environment must be approved by whom is accountable for that.
+// PensieroSicuro Staff is providing it only for educational purpose and should be used in test environment.
+// for info: editing@pensierosicuro.it web: pensierosicuro.it
+
+// This query will display every login attempt from the IPs in the array provided. It will group by IP and account counting the result of the attemps.
+
+let ips = dynamic(["127.0.0.1","192.168.1.1"]); //put here all IPs you need to check
+SigninLogs
+| where IPAddress in (ips)
+| extend LoginAttemptResult = iff(ResultType == 0,"Success", "Failure") // if the connection has been succeded the result is 0 please refeer to documentation https://learn.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-azure-monitor-sign-ins-log-schema
+ | summarize count() by TimeGenerated=format_datetime(TimeGenerated,'dd-MM-yyyy'), IPAddress, tostring(LoginAttemptResult),  ResultDescription, Identity, ResultType,Location, Level,AppDisplayName,AlternateSignInName,IsInteractive,Type
+| project  TimeGenerated, IPAddress, Identity, LoginAttemptResult,count_, ResultDescription, Level,Location, AppDisplayName,ResultType,AlternateSignInName,IsInteractive,Type
